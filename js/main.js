@@ -1,17 +1,30 @@
+const METRIKA_ID = 114121882;
+
+function sendGoal(goalName) {
+  if (typeof ym === "function") {
+    ym(METRIKA_ID, "reachGoal", goalName);
+  }
+}
+
 const waLinks = document.querySelectorAll(".protected-wa");
 if (waLinks.length > 0) {
   const decodedWa = atob("aHR0cHM6Ly93YS5tZS83OTI4ODIyNDA0OQ==");
   waLinks.forEach((link) => {
     link.href = decodedWa;
+    link.addEventListener("click", () => {
+      sendGoal("click_whatsapp");
+    });
   });
 }
 
 const maxLinks = document.querySelectorAll(".protected-max");
 if (maxLinks.length > 0) {
-  // Зашифрованная ссылка https://max.ru/u/f9LHodD0cOLhQGPR8wrs-o9vRfMrIZhhbNwx_mllE7AVV90fwbO58NVgVIo
   const decodedMax = atob("aHR0cHM6Ly9tYXgucnUvdS9mOUxIb2REMGNPTGhRR1BSOHdycy1vOXZSZk1ySVpoaGJOd3hfbWxsRTdBVlY5MGZ3Yk81OE5WZ1ZJbw==");
   maxLinks.forEach((link) => {
     link.href = decodedMax;
+    link.addEventListener("click", () => {
+      sendGoal("click_max");
+    });
   });
 }
 
@@ -26,6 +39,10 @@ if (phoneLinks.length > 0) {
       const decodedPhoneText = atob("KzcgKDkyOCkgODIyIDQwIDQ5");
       phoneLink.textContent = decodedPhoneText;
     }
+
+    phoneLink.addEventListener("click", () => {
+      sendGoal("click_phone");
+    });
   });
 }
 
@@ -33,7 +50,6 @@ const menuBtn = document.querySelector(".menu__btn");
 const menu = document.querySelector(".menu__list");
 
 if (menuBtn && menu) {
-  // Открытие/закрытие мобильного меню
   menuBtn.addEventListener("click", () => {
     menu.classList.toggle("menu--active");
     menuBtn.classList.toggle("menu__btn--active");
@@ -60,8 +76,6 @@ if (menuBtn && menu) {
         }
       }
 
-
-
       if (menu.classList.contains("menu--active")) {
         menu.classList.remove("menu--active");
         menuBtn.classList.remove("menu__btn--active");
@@ -72,68 +86,109 @@ if (menuBtn && menu) {
 }
 
 let lastScrollY = window.scrollY;
-const header = document.querySelector('.header');
+const header = document.querySelector(".header");
 const threshold = 10;
 let ticking = false;
 
-window.addEventListener('scroll', () => {
-  if (!ticking) {
-    window.requestAnimationFrame(() => {
-      const currentScrollY = window.scrollY;
+window.addEventListener(
+  "scroll",
+  () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
 
-      if (menu && menu.classList.contains('menu--active')) {
-        ticking = false;
-        return;
-      }
+        if (menu && menu.classList.contains("menu--active")) {
+          ticking = false;
+          return;
+        }
 
-      if (window.innerWidth > 980) {
-        if (header) header.classList.remove('header--hidden');
+        if (window.innerWidth > 980) {
+          if (header) header.classList.remove("header--hidden");
+          lastScrollY = currentScrollY;
+          ticking = false;
+          return;
+        }
+
+        if (currentScrollY <= 80) {
+          if (header) header.classList.remove("header--hidden");
+          lastScrollY = currentScrollY;
+          ticking = false;
+          return;
+        }
+
+        if (Math.abs(currentScrollY - lastScrollY) <= threshold) {
+          ticking = false;
+          return;
+        }
+
+        if (currentScrollY > lastScrollY) {
+          if (header) header.classList.add("header--hidden");
+        } else {
+          if (header) header.classList.remove("header--hidden");
+        }
+
         lastScrollY = currentScrollY;
         ticking = false;
-        return;
-      }
+      });
 
-      if (currentScrollY <= 80) {
-        if (header) header.classList.remove('header--hidden');
-        lastScrollY = currentScrollY
-        ticking = false;
-        return;
-      }
+      ticking = true;
+    }
+  },
+  { passive: true }
+);
 
-      if (Math.abs(currentScrollY - lastScrollY) <= threshold) {
-        ticking = false;
-        return;
-      }
-
-      if (currentScrollY > lastScrollY) {
-        if (header) header.classList.add('header--hidden');
-      } else {
-        if (header) header.classList.remove('header--hidden');
-      }
-
-      lastScrollY = currentScrollY;
-      ticking = false;
-    });
-
-    ticking = true;
+(function () {
+  let isAccepted = false;
+  try {
+    isAccepted = localStorage.getItem("murat_cookie_accepted") === "true";
+  } catch (e) {
+    isAccepted = false;
   }
-}, { passive: true });
 
-// let lastScrollY = window.scrollY;
-// const header = document.querySelector('.header');
+  if (isAccepted) return;
 
-// window.addEventListener('scroll', () => {
-//   const currentScrollY = window.scrollY;
+  const cookieBanner = document.createElement("div");
+  cookieBanner.className = "cookie-notice";
+  cookieBanner.setAttribute("role", "region");
+  cookieBanner.setAttribute("aria-label", "Уведомление об использовании cookie");
+  cookieBanner.innerHTML = `
+      <p class="cookie-notice__text">
+          Мы используем файлы cookie для удобства работы сайта и аналитики.
+      </p>
+      <button type="button" class="cookie-notice__btn">Соглашаюсь</button>
+  `;
+  document.body.appendChild(cookieBanner);
 
-//   if (menu && menu.classList.contains('menu--active')) {
-//     return;
-//   }
+  let isVisible = false;
+  let timerId = null;
 
-//   if (currentScrollY > lastScrollY && currentScrollY > 100) {
-//     header.classList.add('header--hidden');
-//   } else if (currentScrollY < lastScrollY || currentScrollY <= 0) {
-//     header.classList.remove('header--hidden');
-//   }
+  const showBanner = () => {
+    if (isVisible) return;
+    isVisible = true;
+    cookieBanner.classList.add("cookie-notice--visible");
+    window.removeEventListener("scroll", onScrollTrigger);
+    if (timerId) clearTimeout(timerId);
+  };
 
-//   lastScrollY = currentScrollY;
-// });
+  const onScrollTrigger = () => {
+    const scrolled = window.pageYOffset || document.documentElement.scrollTop;
+    if (scrolled > 180) {
+      showBanner();
+    }
+  };
+
+  window.addEventListener("scroll", onScrollTrigger, { passive: true });
+  timerId = setTimeout(showBanner, 3500);
+
+  const acceptBtn = cookieBanner.querySelector(".cookie-notice__btn");
+  acceptBtn.addEventListener("click", () => {
+    try {
+      localStorage.setItem("murat_cookie_accepted", "true");
+    } catch (e) { }
+
+    cookieBanner.classList.remove("cookie-notice--visible");
+    setTimeout(() => {
+      cookieBanner.remove();
+    }, 450);
+  });
+})();

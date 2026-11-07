@@ -94,10 +94,6 @@ body {
   margin-bottom: 180px;
 }
 
-/* ===== HERO: единый для ВСЕХ страниц =====
-   Размеры плавно меняются через clamp(мин, формула, макс),
-   поэтому брейкпоинты для hero больше не нужны.
-   На страницах ничего переопределять не надо. */
 .about__top {
   position: relative;
   overflow: hidden;
@@ -112,7 +108,6 @@ body {
   background-size: cover;
   text-transform: uppercase;
   border-radius: 20px;
-  /* 360px → 460px, 1440px → ~530px, потолок 600px */
   min-height: clamp(460px, 240px + 20vw, 600px);
 }
 
@@ -132,7 +127,6 @@ body {
 
 .about__title {
   font-weight: 600;
-  /* 360px → 36px, 768px → ~68px, 1440px → ~122px, потолок 150px */
   font-size: clamp(36px, 7px + 8vw, 150px);
   line-height: 1.1;
   margin-bottom: 0.1em;
@@ -141,12 +135,9 @@ body {
 
 .about__text {
   font-weight: 500;
-  /* 360px → 24px, 768px → ~36px, 1440px → ~56px, потолок 60px */
   font-size: clamp(22px, 13px + 3vw, 60px);
   line-height: 1.2;
   letter-spacing: 0.02em;
-  /* резерв под 2 строки: заголовок стоит на одной и той же высоте,
-     даже если подзаголовок на одной странице короче, чем на другой */
   min-height: 2.4em;
   text-wrap: balance;
 }
@@ -645,6 +636,77 @@ body {
   font-size: 14px;
 }
 
+.cookie-notice {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 9999;
+  max-width: 340px;
+  padding: 20px 24px;
+  background-color: #f4f4e7;
+  border: 1px solid rgba(14, 13, 13, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  color: #0e0d0d;
+  font-size: 14px;
+  line-height: 1.45;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.cookie-notice--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.cookie-notice__text {
+  margin: 0 0 14px 0;
+}
+
+.cookie-notice__btn {
+  display: inline-block;
+  padding: 10px 24px;
+  background-color: #f2a531;
+  color: #0e0d0d;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.cookie-notice__btn:hover {
+  background-color: #0e0d0d;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.cookie-notice__btn:active {
+  transform: translateY(0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @media (max-width: 1600px) {
   .slogan__title {
     font-size: 120px;
@@ -993,6 +1055,19 @@ body {
 
   .footer__bottom-item {
     margin-bottom: 10px;
+  }
+
+  .cookie-notice {
+    right: 10px;
+    left: 10px;
+    bottom: 10px;
+    max-width: none;
+    padding: 18px 20px;
+  }
+
+  .cookie-notice__btn {
+    width: 100%;
+    text-align: center;
   }
 }
 
