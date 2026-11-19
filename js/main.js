@@ -138,14 +138,46 @@ window.addEventListener(
 );
 
 (function () {
-  let isAccepted = false;
-  try {
-    isAccepted = localStorage.getItem("murat_cookie_accepted") === "true";
-  } catch (e) {
-    isAccepted = false;
-  }
+  const COOKIE_NAME = "murat_cookie_accepted";
+  const COOKIE_DAYS = 365;
 
-  if (isAccepted) return;
+  const getCookie = (name) => {
+    const matches = document.cookie.match(
+      new RegExp(
+        "(?:^|; )" +
+        name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") +
+        "=([^;]*)"
+      )
+    );
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+  };
+
+  const setCookieSeconds = (name, value, maxAgeSeconds) => {
+    let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax`;
+
+    if (window.location.protocol === "https:") {
+      cookieString += "; Secure";
+    }
+
+    document.cookie = cookieString;
+  };
+
+  const savedValue = getCookie(COOKIE_NAME);
+
+  if (savedValue) {
+    const now = Date.now();
+    const expiryTime =
+      savedValue === "true"
+        ? now + COOKIE_DAYS * 24 * 60 * 60 * 1000
+        : Number(savedValue);
+
+    const remainingSeconds = Math.floor((expiryTime - now) / 1000);
+
+    if (remainingSeconds > 0) {
+      setCookieSeconds(COOKIE_NAME, String(expiryTime), remainingSeconds);
+      return;
+    }
+  }
 
   const cookieBanner = document.createElement("div");
   cookieBanner.className = "cookie-notice";
@@ -182,8 +214,13 @@ window.addEventListener(
 
   const acceptBtn = cookieBanner.querySelector(".cookie-notice__btn");
   acceptBtn.addEventListener("click", () => {
+    const totalSeconds = COOKIE_DAYS * 24 * 60 * 60;
+    const expiryTime = Date.now() + totalSeconds * 1000;
+
+    setCookieSeconds(COOKIE_NAME, String(expiryTime), totalSeconds);
+
     try {
-      localStorage.setItem("murat_cookie_accepted", "true");
+      localStorage.removeItem(COOKIE_NAME);
     } catch (e) { }
 
     cookieBanner.classList.remove("cookie-notice--visible");
